@@ -6,14 +6,18 @@ import { AuthProvider } from './context/AuthContext'
 import './index.css'
 import App from './App.jsx'
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <WardrobeProvider>
-          <App />
-        </WardrobeProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  </StrictMode>,
-)
+try {
+  createRoot(document.getElementById('root')).render(
+    <StrictMode>
+      <BrowserRouter>
+        <AuthProvider>
+          <WardrobeProvider>
+            <App />
+          </WardrobeProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </StrictMode>,
+  )
+} catch (error) {
+  console.error("Failed to render React application:", error);
+}
