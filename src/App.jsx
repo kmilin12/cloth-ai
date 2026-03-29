@@ -8,7 +8,23 @@ import Wardrobe from './pages/Wardrobe';
 import Upload from './pages/Upload';
 import OutfitGenerator from './pages/OutfitGenerator';
 
+import { useEffect } from "react"
+import { supabase } from "./supabaseClient"
+
 function App() {
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (!session) {
+        window.location.href = "/login"
+      }
+    }
+
+    checkUser()
+  }, [])
+
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
@@ -24,18 +40,3 @@ function App() {
 }
 
 export default App;
-
-import { useEffect } from "react"
-import { supabase } from "./supabaseClient" // ajusta si tu ruta es diferente
-
-useEffect(() => {
-  const checkUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-
-    if (!session) {
-      window.location.href = "/login"
-    }
-  }
-
-  checkUser()
-}, [])

@@ -9,7 +9,7 @@ export default function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  
+
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
 
@@ -81,8 +81,8 @@ export default function Login() {
             />
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             className="btn-primary w-full mt-6"
           >
@@ -92,8 +92,8 @@ export default function Login() {
 
         <div className="mt-6 text-center text-sm text-secondary">
           {isSignUp ? "Already have an account?" : "Don't have an account?"}
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={() => setIsSignUp(!isSignUp)}
             className="ml-2 text-primary font-medium hover:underline"
           >
