@@ -7,16 +7,25 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-
+  const [successMessage, setSuccessMessage] = useState(null);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
 
-  // If already logged in, redirect to wardrobe
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
+  // Load signup status from localStorage after registration
+  useEffect(() => {
+    const signupStatus = localStorage.getItem('signup_success');
+    if (signupStatus) {
+      setSuccessMessage('¡Registro exitoso! Revisa el correo de verificación que te enviamos.');
+    }
+  }, []);
+
+  // Clear success message when user logs in
+  useEffect(() => {
+    if (user) {
+      localStorage.removeItem('signup_success');
+      setSuccessMessage(null);
+    }
+  }, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,10 +34,21 @@ export default function Login() {
 
     try {
       if (isSignUp) {
+        setSuccessMessage(null);
         const { error } = await signUp(email, password);
-        if (error) throw error;
-        // Suppress successful signups if email verification is off, should just login
-        navigate('/');
+        
+        if (error) {
+          // Check for rate limit error specifically
+          if (error.message.toLowerCase().includes('rate limit exceeded')) {
+            throw new Error('Estamos enviando muchos correos en este momento, intenta de nuevo en unos minutos.');
+          }
+          throw error;
+        }
+
+        // Show success and save for persistence
+        setSuccessMessage('¡Registro exitoso! Revisa el correo de verificación que te enviamos.');
+        localStorage.setItem('signup_success', 'true');
+        setIsSignUp(false); // Switch to sign in view
       } else {
         const { error } = await signIn(email, password);
         if (error) throw error;
@@ -49,6 +69,12 @@ export default function Login() {
           <h1 className="text-2xl font-semibold mb-2">Cloth.</h1>
           <p className="text-secondary">Your minimalist digital wardrobe</p>
         </div>
+
+        {successMessage && (
+          <div className="bg-green-50 text-green-700 p-4 rounded text-sm mb-6 border border-green-200 fade-in">
+            {successMessage}
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-50 text-error p-3 rounded text-sm mb-4 border border-red-200">
