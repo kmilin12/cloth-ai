@@ -12,6 +12,7 @@ export const WardrobeProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchItems = async () => {
+    if (!supabase) return;
     setLoading(true);
     const { data, error } = await supabase
       .from('wardrobe')
@@ -46,6 +47,8 @@ export const WardrobeProvider = ({ children }) => {
       style: itemData.style
     };
     
+    if (!supabase) return;
+    
     const { data, error } = await supabase
       .from('wardrobe')
       .insert([newItem])
@@ -63,6 +66,7 @@ export const WardrobeProvider = ({ children }) => {
   };
 
   const removeItem = async (id) => {
+    if (!supabase) return;
     const { error } = await supabase
       .from('wardrobe')
       .delete()
