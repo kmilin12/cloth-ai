@@ -59,6 +59,42 @@
   box-shadow: var(--shadow-sm);
 }
 
+.nav-actions {
+  display: flex;
+  align-items: center;
+  border-left: 1px solid var(--border);
+  padding-left: 16px;
+  margin-left: 16px;
+}
+
+.logout-btn {
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+
+.logout-btn:hover {
+  color: #e53e3e !important;
+  background-color: #fee2e2 !important;
+}
+
+@media (max-width: 640px) {
+  .nav-label {
+    display: none;
+  }
+  .nav-content {
+    padding: 0 12px;
+  }
+  .nav-links {
+    gap: 4px;
+  }
+  .nav-actions {
+    margin-left: 8px;
+    padding-left: 8px;
+  }
+}
+
 .main-content {
   flex: 1;
   max-width: 1200px;
