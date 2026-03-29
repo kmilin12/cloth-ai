@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWardrobe } from '../context/WardrobeContext';
+import { supabase } from '../supabase';
 import { Upload as UploadIcon, Loader2, Check } from 'lucide-react';
 
 export default function Upload() {
@@ -8,10 +9,11 @@ export default function Upload() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   
-  const [step, setStep] = useState('upload'); // upload, analyzing, details
+  const [step, setStep] = useState('upload'); // upload, analyzing, uploading, details
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   
-  // Mock form state
   const [formData, setFormData] = useState({
     category: 'Top',
     color: 'White',
@@ -22,6 +24,7 @@ export default function Upload() {
     e.preventDefault();
     const file = e.dataTransfer ? e.dataTransfer.files[0] : e.target.files[0];
     if (file && file.type.startsWith('image/')) {
+      setImageFile(file);
       processFile(file);
     }
   };
@@ -32,9 +35,8 @@ export default function Upload() {
       setPreviewUrl(e.target.result);
       setStep('analyzing');
       
-      // Simulate API call for classification
+      // Simulate API call for classification (could be replaced with real ML later)
       setTimeout(() => {
-        // Mock random classification
         const categories = ['Top', 'Bottom', 'Shoes', 'Outerwear'];
         const colors = ['Black', 'White', 'Navy', 'Beige', 'Grey', 'Red'];
         const styles = ['Casual', 'Formal', 'Sport', 'Streetwear'];
@@ -50,14 +52,41 @@ export default function Upload() {
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    addItem({
-      id: Date.now().toString(),
-      imageUrl: previewUrl,
-      ...formData
-    });
-    navigate('/');
+    if (!imageFile) return;
+    
+    setIsUploading(true);
+    try {
+      // 1. Upload image to Supabase Storage
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `user-uploads/${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('clothing-images')
+        .upload(filePath, imageFile);
+        
+      if (uploadError) throw uploadError;
+      
+      // 2. Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('clothing-images')
+        .getPublicUrl(filePath);
+
+      // 3. Add to Database
+      await addItem({
+        imageUrl: publicUrl,
+        ...formData
+      });
+      
+      navigate('/');
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      alert("Failed to upload image. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -144,11 +173,20 @@ export default function Upload() {
             </div>
 
             <div className="form-actions mt-8">
-              <button type="button" className="btn-secondary" onClick={() => setStep('upload')}>
+              <button 
+                type="button" 
+                className="btn-secondary" 
+                onClick={() => setStep('upload')}
+                disabled={isUploading}
+              >
                 Cancel
               </button>
-              <button type="submit" className="btn-primary">
-                Save Item
+              <button 
+                type="submit" 
+                className="btn-primary"
+                disabled={isUploading}
+              >
+                {isUploading ? <Loader2 className="spinner" size={18} /> : 'Save Item'}
               </button>
             </div>
           </form>
