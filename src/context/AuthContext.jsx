@@ -53,6 +53,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     signUp: (email, password) => supabase.auth.signUp({ email, password }),
     signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
+    signInWithGoogle: () => supabase.auth.signInWithOAuth({ provider: 'google' }),
     signOut: () => supabase.auth.signOut(),
   };
 

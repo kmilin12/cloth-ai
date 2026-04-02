@@ -1,18 +1,19 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWardrobe } from '../context/WardrobeContext';
 import { supabase } from '../supabase';
-import { Upload as UploadIcon, Loader2, Check } from 'lucide-react';
+import { Upload as UploadIcon, Loader2, Check, X, Wand2, ChevronRight } from 'lucide-react';
 
 export default function Upload() {
   const { addItem } = useWardrobe();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   
-  const [step, setStep] = useState('upload'); // upload, analyzing, uploading, details
+  const [step, setStep] = useState('upload'); // upload, preview, analyzing, suggested, details
   const [previewUrl, setPreviewUrl] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   
   const [formData, setFormData] = useState({
     category: 'Top',
@@ -25,36 +26,51 @@ export default function Upload() {
     const file = e.dataTransfer ? e.dataTransfer.files[0] : e.target.files[0];
     if (file && file.type.startsWith('image/')) {
       setImageFile(file);
-      processFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewUrl(e.target.result);
+        setStep('preview');
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const processFile = (file) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreviewUrl(e.target.result);
-      setStep('analyzing');
+  const startAnalysis = async () => {
+    if (isAnalyzing) return;
+    
+    setIsAnalyzing(true);
+    setStep('analyzing');
+    
+    // Simulate AI analysis with a delay (debounce-like behavior already handled by state)
+    setTimeout(() => {
+      const categories = ['Top', 'Bottom', 'Shoes', 'Outerwear'];
+      const colors = ['Negro', 'Blanco', 'Azul', 'Beige', 'Gris', 'Rojo'];
+      const styles = ['Casual', 'Formal', 'Deportivo', 'Streetwear'];
       
-      // Simulate API call for classification (could be replaced with real ML later)
-      setTimeout(() => {
-        const categories = ['Top', 'Bottom', 'Shoes', 'Outerwear'];
-        const colors = ['Black', 'White', 'Navy', 'Beige', 'Grey', 'Red'];
-        const styles = ['Casual', 'Formal', 'Sport', 'Streetwear'];
-        
-        setFormData({
-          category: categories[Math.floor(Math.random() * categories.length)],
-          color: colors[Math.floor(Math.random() * colors.length)],
-          style: styles[Math.floor(Math.random() * styles.length)]
-        });
-        setStep('details');
-      }, 2000);
-    };
-    reader.readAsDataURL(file);
+      const suggestedCategory = categories[Math.floor(Math.random() * categories.length)];
+      
+      setFormData({
+        category: suggestedCategory,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        style: styles[Math.floor(Math.random() * styles.length)]
+      });
+      
+      setIsAnalyzing(false);
+      setStep('suggested');
+    }, 1500);
+  };
+
+  const handleConfirmSuggestion = () => {
+    handleSubmit();
+  };
+
+  const handleShowDetails = () => {
+    setStep('details');
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!imageFile) return;
+    if (e) e.preventDefault();
+    if (!imageFile || isUploading) return;
     
     setIsUploading(true);
     try {
@@ -83,20 +99,23 @@ export default function Upload() {
       navigate('/');
     } catch (error) {
       console.error("Error uploading image:", error);
-      alert("Failed to upload image. Please try again.");
+      alert("Hubo un error al subir la prenda. Por favor intenta de nuevo.");
     } finally {
       setIsUploading(false);
     }
   };
 
   return (
-    <div className="page-container max-w-md mx-auto">
-      <h2 className="text-center mb-8">Add to Wardrobe</h2>
+    <div className="page-container max-w-lg mx-auto">
+      <div className="mb-10 text-center">
+        <h2 className="text-3xl font-bold mb-2">Añadir Prenda</h2>
+        <p className="text-secondary">Sube una foto para organizar tu armario</p>
+      </div>
       
-      <div className="upload-card">
+      <div className="card overflow-hidden">
         {step === 'upload' && (
           <div 
-            className="drop-zone"
+            className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-border rounded-xl hover:border-accent hover:bg-accent/5 transition-all cursor-pointer group"
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleFileDrop}
             onClick={() => fileInputRef.current?.click()}
@@ -106,90 +125,150 @@ export default function Upload() {
               ref={fileInputRef} 
               onChange={handleFileDrop} 
               accept="image/*" 
-              className="hidden-input" 
+              className="hidden" 
             />
-            <UploadIcon size={48} className="text-tertiary mb-4" />
-            <h3>Click to upload or drag and drop</h3>
-            <p className="text-secondary">SVG, PNG, JPG or GIF (max. 5MB)</p>
+            <div className="w-16 h-16 rounded-full bg-surface border border-border flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <UploadIcon size={28} className="text-accent" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Sube una foto</h3>
+            <p className="text-secondary text-sm text-center">Arrastra y suelta aquí o haz clic para seleccionar</p>
+            <p className="text-tertiary text-xs mt-4">JPG, PNG hasta 5MB</p>
           </div>
         )}
 
-        {step === 'analyzing' && (
-          <div className="analyzing-state">
-            <div className="image-preview-wrapper mb-6">
-              <img src={previewUrl} alt="Preview" className="preview-image" />
-              <div className="overlay-loader">
-                <Loader2 className="spinner" size={32} />
+        {(step === 'preview' || step === 'analyzing' || step === 'suggested' || step === 'details') && (
+          <div className="space-y-6 fade-in">
+            <div className="relative aspect-square overflow-hidden rounded-xl bg-surface-hover">
+              <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
+              
+              {step === 'preview' && (
+                <button 
+                  className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 backdrop-blur-sm"
+                  onClick={() => setStep('upload')}
+                >
+                  <X size={20} />
+                </button>
+              )}
+
+              {step === 'analyzing' && (
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center text-white p-6 text-center">
+                  <Loader2 className="spinner mb-4" size={48} />
+                  <h3 className="text-xl font-bold mb-2">Analizando prenda...</h3>
+                  <p className="text-white/80 text-sm">Nuestra IA está identificando el tipo, color y estilo.</p>
+                </div>
+              )}
+            </div>
+
+            {step === 'preview' && (
+              <div className="p-2">
+                <button 
+                  onClick={startAnalysis}
+                  className="btn-primary w-full py-4 text-lg"
+                >
+                  <Wand2 size={24} />
+                  Analizar prenda con IA
+                </button>
+                <div className="mt-4 flex justify-center">
+                  <button 
+                    onClick={() => setStep('details')}
+                    className="text-tertiary text-sm font-medium hover:text-secondary underline underline-offset-4"
+                  >
+                    Omitir IA y rellenar manualmente
+                  </button>
+                </div>
               </div>
-            </div>
-            <h3>Analyzing Item...</h3>
-            <p className="text-secondary">AI is determining the type, color, and style.</p>
+            )}
+
+            {step === 'suggested' && (
+              <div className="p-4 space-y-6">
+                <div className="text-center">
+                  <p className="text-tertiary text-xs uppercase tracking-widest font-bold mb-2">Sugerencia de IA</p>
+                  <h3 className="text-2xl font-bold">¿Esto es un {formData.category.toLowerCase()}?</h3>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <button 
+                    onClick={handleConfirmSuggestion}
+                    className="btn-primary py-4"
+                    disabled={isUploading}
+                  >
+                    {isUploading ? <Loader2 className="spinner" size={20} /> : <><Check size={20} /> Sí, guardar</>}
+                  </button>
+                  <button 
+                    onClick={handleShowDetails}
+                    className="btn-secondary py-4"
+                    disabled={isUploading}
+                  >
+                    Cambiar
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {step === 'details' && (
+              <form onSubmit={handleSubmit} className="p-2 space-y-6">
+                <div className="grid gap-4">
+                  <div className="form-group">
+                    <label>Categoría</label>
+                    <select 
+                      value={formData.category} 
+                      onChange={e => setFormData({...formData, category: e.target.value})}
+                      className="form-input"
+                    >
+                      <option value="Top">Parte superior (Top)</option>
+                      <option value="Bottom">Parte inferior (Bottom)</option>
+                      <option value="Shoes">Calzado</option>
+                      <option value="Outerwear">Abrigo/Exterior</option>
+                      <option value="Accessory">Accesorio</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Color</label>
+                    <input 
+                      type="text" 
+                      value={formData.color} 
+                      onChange={e => setFormData({...formData, color: e.target.value})}
+                      className="form-input"
+                      placeholder="Ej: Negro, Blanco..."
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Estilo</label>
+                    <select 
+                      value={formData.style} 
+                      onChange={e => setFormData({...formData, style: e.target.value})}
+                      className="form-input"
+                    >
+                      <option value="Casual">Casual</option>
+                      <option value="Formal">Formal</option>
+                      <option value="Sport">Deportivo</option>
+                      <option value="Streetwear">Streetwear</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 pt-4 border-t border-border">
+                  <button 
+                    type="button" 
+                    className="btn-secondary flex-1" 
+                    onClick={() => setStep('suggested')}
+                    disabled={isUploading}
+                  >
+                    Volver
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="btn-primary flex-[2]"
+                    disabled={isUploading}
+                  >
+                    {isUploading ? <Loader2 className="spinner" size={20} /> : 'Guardar Prenda'}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
-        )}
-
-        {step === 'details' && (
-          <form onSubmit={handleSubmit} className="details-form fade-in">
-             <div className="image-preview-wrapper small mb-6">
-              <img src={previewUrl} alt="Preview" className="preview-image" />
-              <div className="success-badge"><Check size={16} /></div>
-            </div>
-
-            <div className="form-group">
-              <label>Category</label>
-              <select 
-                value={formData.category} 
-                onChange={e => setFormData({...formData, category: e.target.value})}
-                className="form-input"
-              >
-                <option value="Top">Top</option>
-                <option value="Bottom">Bottom</option>
-                <option value="Shoes">Shoes</option>
-                <option value="Outerwear">Outerwear</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label>Color</label>
-              <input 
-                type="text" 
-                value={formData.color} 
-                onChange={e => setFormData({...formData, color: e.target.value})}
-                className="form-input"
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Style</label>
-              <select 
-                value={formData.style} 
-                onChange={e => setFormData({...formData, style: e.target.value})}
-                className="form-input"
-              >
-                <option value="Casual">Casual</option>
-                <option value="Formal">Formal</option>
-                <option value="Sport">Sport</option>
-                <option value="Streetwear">Streetwear</option>
-              </select>
-            </div>
-
-            <div className="form-actions mt-8">
-              <button 
-                type="button" 
-                className="btn-secondary" 
-                onClick={() => setStep('upload')}
-                disabled={isUploading}
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit" 
-                className="btn-primary"
-                disabled={isUploading}
-              >
-                {isUploading ? <Loader2 className="spinner" size={18} /> : 'Save Item'}
-              </button>
-            </div>
-          </form>
         )}
       </div>
     </div>

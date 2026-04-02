@@ -10,7 +10,7 @@ export default function Login() {
   const [successMessage, setSuccessMessage] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
 
   // Load signup status from localStorage after registration
@@ -41,7 +41,8 @@ export default function Login() {
         
         if (error) {
           // Check for rate limit error specifically
-          if (error.message.toLowerCase().includes('rate limit exceeded')) {
+          const errorMsg = error.message.toLowerCase();
+          if (errorMsg.includes('rate limit') || errorMsg.includes('too many requests')) {
             throw new Error('Estamos enviando muchos correos en este momento, intenta de nuevo en unos minutos.');
           }
           throw error;
@@ -63,23 +64,38 @@ export default function Login() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoading(true);
+      const { error } = await signInWithGoogle();
+      if (error) throw error;
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="page-container flex items-center justify-center min-h-screen">
-      <div className="login-card w-full max-w-sm mx-auto bg-surface p-8 rounded-lg shadow-md border border-border">
-        <div className="text-center mb-8">
-          <Shirt size={48} className="mx-auto mb-4 text-accent" />
-          <h1 className="text-2xl font-semibold mb-2">Cloth.</h1>
+    <div className="page-container flex items-center justify-center min-h-[90vh]">
+      <div className="card w-full max-w-sm mx-auto fade-in">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent/10 mb-6">
+            <Shirt size={32} className="text-accent" />
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Cloth.</h1>
           <p className="text-secondary">Your minimalist digital wardrobe</p>
         </div>
 
         {successMessage && (
-          <div className="bg-green-50 text-green-700 p-4 rounded text-sm mb-6 border border-green-200 fade-in">
-            {successMessage}
+          <div className="bg-emerald-50 text-emerald-700 p-4 rounded-xl text-sm mb-6 border border-emerald-100 flex items-start gap-3">
+            <div className="mt-0.5">✓</div>
+            <p>{successMessage}</p>
           </div>
         )}
 
         {error && (
-          <div className="bg-red-50 text-error p-3 rounded text-sm mb-4 border border-red-200">
+          <div className="bg-red-50 text-error p-4 rounded-xl text-sm mb-6 border border-red-100">
             {error}
           </div>
         )}
@@ -112,21 +128,43 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="btn-primary w-full mt-6"
+            className="btn-primary w-full py-3"
           >
-            {loading ? 'Processing...' : (isSignUp ? 'Sign Up' : 'Sign In')}
+            {loading ? <span className="spinner">◌</span> : (isSignUp ? 'Crear cuenta' : 'Iniciar sesión')}
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-secondary">
-          {isSignUp ? "Already have an account?" : "Don't have an account?"}
+        <div className="relative my-8 text-center text-xs uppercase tracking-widest text-tertiary">
+          <span className="bg-surface px-2 relative z-10">O continuar con</span>
+          <div className="absolute top-1/2 left-0 w-full h-[1px] bg-border"></div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+          className="btn-secondary w-full py-3 flex items-center justify-center gap-2 mb-8"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.9 3.24-1.92 4.28-1.2 1.2-3.08 2.52-5.92 2.52-4.72 0-8.52-3.84-8.52-8.56s3.8-8.56 8.52-8.56c2.56 0 4.44.96 5.8 2.28l2.32-2.32C18.4 1.48 15.8 0 12.48 0 6.48 0 1.6 4.84 1.6 10.84s4.88 10.84 10.88 10.84c3.24 0 5.68-1.08 7.56-3.04 1.96-1.96 2.56-4.72 2.56-6.88 0-.68-.04-1.32-.16-1.92h-8.4z"/>
+          </svg>
+          Google
+        </button>
+
+        <div className="text-center text-sm text-secondary">
+          {isSignUp ? "¿Ya tienes cuenta?" : "¿No tienes cuenta?"}
           <button
             type="button"
             onClick={() => setIsSignUp(!isSignUp)}
-            className="ml-2 text-primary font-medium hover:underline"
+            className="ml-2 text-accent font-semibold hover:underline"
           >
-            {isSignUp ? 'Sign In' : 'Sign Up'}
+            {isSignUp ? 'Inicia sesión' : 'Regístrate'}
           </button>
+        </div>
+
+        <div className="mt-8 pt-6 border-t border-border/50 text-center space-y-1">
+          <p className="text-[11px] text-tertiary font-medium">Tus datos están protegidos</p>
+          <p className="text-[11px] text-tertiary">No compartimos tu información</p>
         </div>
       </div>
     </div>

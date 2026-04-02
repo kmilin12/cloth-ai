@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import PublicRoute from './components/PublicRoute';
 import './App.css';
 
 import Login from './pages/Login';
@@ -11,7 +12,10 @@ import OutfitGenerator from './pages/OutfitGenerator';
 function App() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
+      <Route element={<PublicRoute />}>
+        <Route path="/login" element={<Login />} />
+      </Route>
+      
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<Layout />}>
           <Route index element={<Wardrobe />} />
