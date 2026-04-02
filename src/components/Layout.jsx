@@ -10,35 +10,36 @@ export default function Layout() {
     <div className="app-container">
       <header className="top-nav">
         <div className="nav-content">
-          <div className="logo-section">
-            <h1 className="logo">Cloth.</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold tracking-tight">Cloth.</h1>
           </div>
+          
           <nav className="nav-links">
-            <NavLink to="/" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
-              <Shirt size={20} />
-              <span className="nav-label">Wardrobe</span>
+            <NavLink to="/" className={({ isActive }) => (isActive ? 'nav-item active text-primary font-semibold' : 'nav-item')}>
+              <Shirt size={18} />
+              <span className="nav-label">Armario</span>
             </NavLink>
-            <NavLink to="/upload" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
-              <Plus size={20} />
-              <span className="nav-label">Add Items</span>
+            <NavLink to="/upload" className={({ isActive }) => (isActive ? 'nav-item active text-primary font-semibold' : 'nav-item')}>
+              <Plus size={18} />
+              <span className="nav-label">Añadir Prenda</span>
             </NavLink>
-            <NavLink to="/outfits" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
-              <Shuffle size={20} />
+            <NavLink to="/outfits" className={({ isActive }) => (isActive ? 'nav-item active text-primary font-semibold' : 'nav-item')}>
+              <Shuffle size={18} />
               <span className="nav-label">Outfits</span>
             </NavLink>
           </nav>
           
           <div className="nav-actions">
             <button 
-              className="nav-item logout-btn" 
+              className="flex items-center gap-2 text-sm text-tertiary hover:text-primary transition-colors" 
               onClick={async () => {
                 await signOut();
                 navigate('/login');
               }}
-              title="Sign Out"
+              title="Cerrar sesión"
             >
-              <LogOut size={20} />
-              <span className="nav-label">Cerrar sesión</span>
+              <LogOut size={16} />
+              <span className="nav-label hidden sm:inline">Cerrar sesión</span>
             </button>
           </div>
         </div>

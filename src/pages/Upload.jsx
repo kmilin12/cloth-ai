@@ -115,7 +115,7 @@ export default function Upload() {
       <div className="card overflow-hidden">
         {step === 'upload' && (
           <div 
-            className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-border rounded-xl hover:border-accent hover:bg-accent/5 transition-all cursor-pointer group"
+            className="drop-zone fade-in"
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleFileDrop}
             onClick={() => fileInputRef.current?.click()}
@@ -127,23 +127,22 @@ export default function Upload() {
               accept="image/*" 
               className="hidden" 
             />
-            <div className="w-16 h-16 rounded-full bg-surface border border-border flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-              <UploadIcon size={28} className="text-accent" />
+            <div className="drop-icon-container">
+              <UploadIcon size={28} className="text-secondary" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">Sube una foto</h3>
-            <p className="text-secondary text-sm text-center">Arrastra y suelta aquí o haz clic para seleccionar</p>
-            <p className="text-tertiary text-xs mt-4">JPG, PNG hasta 5MB</p>
+            <h3 className="text-lg font-semibold mb-1">Arrastra tu prenda o haz clic para subir</h3>
+            <p className="text-tertiary text-sm mt-2">Formatos sportados: JPG, PNG (Max 5MB)</p>
           </div>
         )}
 
         {(step === 'preview' || step === 'analyzing' || step === 'suggested' || step === 'details') && (
           <div className="space-y-6 fade-in">
-            <div className="relative aspect-square overflow-hidden rounded-xl bg-surface-hover">
-              <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
+            <div className="relative h-64 overflow-hidden rounded-xl bg-surface-secondary border border-border flex items-center justify-center">
+              <img src={previewUrl} alt="Preview" className="h-full w-full object-contain p-4" />
               
               {step === 'preview' && (
                 <button 
-                  className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 backdrop-blur-sm"
+                  className="absolute top-4 right-4 p-2 bg-bg/80 text-text-[111111] border border-border shadow-sm rounded-full hover:bg-bg transition-colors backdrop-blur-md"
                   onClick={() => setStep('upload')}
                 >
                   <X size={20} />

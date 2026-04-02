@@ -22,21 +22,17 @@ export default function Wardrobe() {
 
   return (
     <div className="page-container fade-in">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div className="page-header">
         <div>
-          <h1 className="text-4xl font-bold mb-2">Tu Armario</h1>
-          <p className="text-secondary font-medium">{items.length} prendas en total</p>
+          <h1 className="text-3xl font-bold mb-2">Tu Armario</h1>
+          <p className="subtitle">{items.length} prendas en total</p>
         </div>
         
-        <div className="flex flex-wrap gap-2">
+        <div className="filter-group">
           {categories.map(cat => (
             <button
               key={cat.value}
-              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                filter === cat.value 
-                  ? 'bg-accent text-white shadow-md' 
-                  : 'bg-surface border border-border text-secondary hover:border-text-tertiary'
-              }`}
+              className={`filter-btn ${filter === cat.value ? 'active' : ''}`}
               onClick={() => setFilter(cat.value)}
             >
               {cat.label}
@@ -46,7 +42,7 @@ export default function Wardrobe() {
       </div>
 
       {filteredItems.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <div className="clothing-grid">
           {filteredItems.map(item => (
             <ClothingCard 
               key={item.id} 
@@ -56,17 +52,17 @@ export default function Wardrobe() {
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-20 text-center card bg-surface-hover/50 border-dashed border-2">
-          <div className="w-20 h-20 bg-surface rounded-full flex items-center justify-center mb-6 shadow-sm">
-            <Shirt size={40} className="text-tertiary" />
+        <div className="empty-state fade-in">
+          <div className="empty-icon">
+            <Shirt />
           </div>
-          <h3 className="text-xl font-bold mb-2">No hay prendas</h3>
-          <p className="text-secondary max-w-xs mx-auto mb-8">
+          <h3 className="text-xl font-bold mb-4">No hay prendas</h3>
+          <p className="text-secondary m-auto mb-8" style={{maxWidth: '300px'}}>
             Aún no has añadido ninguna prenda a tu {filter === 'All' ? 'armario' : 'categoría de ' + filter.toLowerCase()}.
           </p>
-          <Link to="/upload" className="btn-primary">
+          <Link to="/upload" className="btn-primary" style={{display: 'inline-flex', margin: '0 auto'}}>
             <Plus size={20} />
-            Añadir mi primera prenda
+            Añadir prenda
           </Link>
         </div>
       )}

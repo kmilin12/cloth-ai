@@ -50,16 +50,17 @@ export default function OutfitGenerator() {
                          items.some(i => i.category === 'Bottom');
 
   return (
-    <div className="page-container max-w-2xl mx-auto fade-in">
+    <div className="page-container max-w-lg mx-auto fade-in">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-3">Generador de Outfits</h1>
-        <p className="text-secondary max-w-md mx-auto">Creamos combinaciones lógicas basadas en el estilo de tus prendas.</p>
+        <h1 className="text-4xl font-bold mb-4">Generador de Outfits</h1>
+        <p className="text-secondary m-auto mb-8" style={{maxWidth: '400px'}}>Creamos combinaciones lógicas basadas en el estilo de tus prendas.</p>
         
         <div className="mt-8">
           <button 
             onClick={generateOutfit} 
             disabled={!hasEnoughItems || isAnimating}
-            className="btn-primary px-8 py-4 text-lg shadow-lg"
+            className="btn-primary"
+            style={{padding: '1rem 2rem', fontSize: '1.1rem'}}
           >
             {isAnimating ? <Loader2 className="spinner" size={24} /> : <Shuffle size={24} />}
             {currentOutfit ? 'Generar otro' : 'Generar Outfit'}
@@ -67,56 +68,56 @@ export default function OutfitGenerator() {
         </div>
         
         {!hasEnoughItems && (
-          <div className="mt-6 p-4 bg-amber-50 text-amber-700 rounded-xl border border-amber-100 flex items-center justify-center gap-2 text-sm mx-auto max-w-sm">
+          <div className="text-error bg-error-bg border-error mt-6 p-4 rounded-xl items-center justify-center gap-2 m-auto" style={{display: 'inline-flex', marginTop: '1.5rem', border: '1px solid'}}>
             <Info size={18} />
-            <p>Necesitas al menos una parte superior y una inferior.</p>
+            <p className="font-medium small">Necesitas al menos una parte superior y una inferior.</p>
           </div>
         )}
       </div>
 
       {currentOutfit && (
-        <div className={`space-y-8 ${isAnimating ? 'opacity-50 scale-95' : 'opacity-100 scale-100'} transition-all duration-300`}>
-          <div className="card grid grid-cols-1 md:grid-cols-3 gap-6 bg-surface-hover/30 border-2">
+        <div className="outfit-display" style={{transition: 'all 0.3s ease', opacity: isAnimating ? 0.5 : 1, transform: isAnimating ? 'scale(0.98)' : 'none'}}>
+          <div className="outfit-grid-structured">
             {/* Top */}
-            <div className="flex flex-col gap-3">
-              <span className="text-[10px] uppercase tracking-widest font-bold text-tertiary px-2">Parte Superior</span>
-              <div className="aspect-[3/4] rounded-xl bg-white border border-border overflow-hidden shadow-sm">
+            <div className="outfit-section">
+              <span className="outfit-section-label">Parte Superior</span>
+              <div className="outfit-slot">
                 {currentOutfit.top ? (
-                  <img src={currentOutfit.top.imageUrl} alt="Top" className="w-full h-full object-cover" />
+                  <img src={currentOutfit.top.imageUrl} alt="Top" className="outfit-img" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-tertiary italic">Vacio</div>
+                  <div className="empty-slot">Vacío</div>
                 )}
               </div>
             </div>
             
             {/* Bottom */}
-            <div className="flex flex-col gap-3">
-              <span className="text-[10px] uppercase tracking-widest font-bold text-tertiary px-2">Parte Inferior</span>
-              <div className="aspect-[3/4] rounded-xl bg-white border border-border overflow-hidden shadow-sm">
+            <div className="outfit-section">
+              <span className="outfit-section-label">Parte Inferior</span>
+              <div className="outfit-slot">
                 {currentOutfit.bottom ? (
-                  <img src={currentOutfit.bottom.imageUrl} alt="Bottom" className="w-full h-full object-cover" />
+                  <img src={currentOutfit.bottom.imageUrl} alt="Bottom" className="outfit-img" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-tertiary italic">Vacio</div>
+                  <div className="empty-slot">Vacío</div>
                 )}
               </div>
             </div>
             
             {/* Shoes */}
-            <div className="flex flex-col gap-3">
-              <span className="text-[10px] uppercase tracking-widest font-bold text-tertiary px-2">Calzado</span>
-              <div className="aspect-[3/4] rounded-xl bg-white border border-border overflow-hidden shadow-sm">
+            <div className="outfit-section">
+              <span className="outfit-section-label">Calzado</span>
+              <div className="outfit-slot" style={{height: '160px'}}>
                 {currentOutfit.shoes ? (
-                  <img src={currentOutfit.shoes.imageUrl} alt="Shoes" className="w-full h-full object-cover" />
+                  <img src={currentOutfit.shoes.imageUrl} alt="Shoes" className="outfit-img" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-tertiary italic">Vacio</div>
+                  <div className="empty-slot">Vacío</div>
                 )}
               </div>
             </div>
           </div>
           
-          <div className="text-center p-6 bg-accent/5 rounded-2xl border border-accent/10">
-            <h3 className="text-2xl font-bold text-accent mb-1">Estilo {currentOutfit.style}</h3>
-            <p className="text-secondary text-sm">Combinado lógicamente por nuestra IA</p>
+          <div className="text-center p-6 border rounded-xl" style={{borderColor: 'var(--border)', backgroundColor: 'var(--surface)'}}>
+            <h3 className="text-2xl font-bold text-accent mb-2">Estilo {currentOutfit.style}</h3>
+            <p className="text-secondary small">Combinado lógicamente por nuestra IA</p>
           </div>
         </div>
       )}

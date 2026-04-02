@@ -84,7 +84,7 @@ export default function Login() {
             <Shirt size={32} className="text-accent" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight mb-2">Cloth.</h1>
-          <p className="text-secondary">Your minimalist digital wardrobe</p>
+          <p className="text-secondary">Tu armario digital minimalista</p>
         </div>
 
         {successMessage && (
